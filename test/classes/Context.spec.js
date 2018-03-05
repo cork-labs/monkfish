@@ -6,7 +6,7 @@ const expect = chai.expect;
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-const Context = require('../../src/Context');
+const Context = require('../../src/classes/Context');
 
 describe('Context', function () {
   it('should be a function', function () {
@@ -15,11 +15,12 @@ describe('Context', function () {
 
   describe('api', function () {
     beforeEach(function () {
-      this.context = new Context();
+      this.data = { foo: 'bar' };
+      this.context = new Context(this.data);
     });
 
-    it('should...', function () {
-      expect(true).to.equal(true);
+    it('should expose the data attributes', function () {
+      expect(this.context).to.deep.equal(this.data);
     });
   });
 });

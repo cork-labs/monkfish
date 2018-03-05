@@ -1,9 +1,11 @@
 'use strict';
 
+const _ = require('lodash');
+
 class Result {
   constructor (data, meta) {
-    this._data = data;
-    this._meta = meta;
+    this._data = _.cloneDeep(data);
+    this._meta = _.cloneDeep(meta);
   }
 
   get data () {

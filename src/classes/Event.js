@@ -1,9 +1,11 @@
 'use strict';
 
+const _ = require('lodash');
+
 class Event {
   constructor (type, data) {
     this.type = type;
-    Object.assign(this, data);
+    this.data = _.cloneDeep(data, {});
   }
 }
 

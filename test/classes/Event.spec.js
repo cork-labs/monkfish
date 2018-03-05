@@ -6,7 +6,7 @@ const expect = chai.expect;
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-const Event = require('../../src/Event');
+const Event = require('../../src/classes/Event');
 
 describe('Event', function () {
   it('should be a function', function () {
@@ -15,11 +15,18 @@ describe('Event', function () {
 
   describe('api', function () {
     beforeEach(function () {
-      this.event = new Event();
+      this.type = 'foo';
+      this.data = { foo: 'bar' };
+      this.event = new Event(this.type, this.data);
     });
 
-    it('should...', function () {
-      expect(true).to.equal(true);
+    it('should expose the event type', function () {
+      expect(this.event.type).to.equal(this.type);
+    });
+
+    it('should expose the data', function () {
+      expect(this.event.data).to.be.an('object');
+      expect(this.event.data).to.deep.equal(this.data);
     });
   });
 });

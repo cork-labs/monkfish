@@ -6,7 +6,7 @@ const expect = chai.expect;
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-const Result = require('../../src/Result');
+const Result = require('../../src/classes/Result');
 
 describe('Result', function () {
   it('should be a function', function () {
@@ -15,11 +15,17 @@ describe('Result', function () {
 
   describe('api', function () {
     beforeEach(function () {
-      this.result = new Result();
+      this.data = { foo: 'bar' };
+      this.meta = { baz: 'qux' };
+      this.result = new Result(this.data, this.meta);
     });
 
-    it('should...', function () {
-      expect(true).to.equal(true);
+    it('should expose data', function () {
+      expect(this.result.data).to.deep.equal(this.data);
+    });
+
+    it('should expose meta', function () {
+      expect(this.result.meta).to.deep.equal(this.meta);
     });
   });
 });

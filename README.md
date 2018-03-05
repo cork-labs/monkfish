@@ -92,6 +92,7 @@ Check [CONTRIBUTING](https://github.com/cork-labs/contributing/blob/master/CONTR
 
 - [npm-bump](https://www.npmjs.com/package/npm-bump)
 - [chai](http://chaijs.com/api/)
+- [chai-as-promised](http://chaijs.com/plugins/chai-as-promised/)
 - [sinon](http://sinonjs.org/)
 - [sinon-chai](https://github.com/domenic/sinon-chai)
 

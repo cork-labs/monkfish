@@ -1,5 +1,7 @@
 'use strict';
 
+const ApplicationError = require('./errors/ApplicationError');
+
 const defaults = {
   map: {},
   default: {
@@ -9,8 +11,7 @@ const defaults = {
 };
 
 class ErrorHandler {
-
-  constructor(fns, config) {
+  constructor (fns, config) {
     this._config = Object.assign({}, defaults, config);
 
     this._fns = fns || [];
@@ -21,7 +22,8 @@ class ErrorHandler {
       return Promise.resolve();
     }
     const handler = fns.shift();
-    return handler(error, event, context, logger)
+    return Promise.resolve()
+      .then(() => handler(error, event, context, logger))
       .catch((err) => logger.error({ err, handler: handler.name }, 'ErrorHandler::handle()'))
       .then(() => this._didFail(error, event, context, logger, fns));
   }
@@ -37,9 +39,9 @@ class ErrorHandler {
   handle (err, event, context, logger) {
     const error = this._mapError(err);
     return this._didFail(error, event, context, logger, this._fns.slice(0))
-      .finally(() => {
-        throw err;
-    });
+      .then(() => {
+        throw error;
+      });
   }
 }
 module.exports = ErrorHandler;

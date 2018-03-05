@@ -24,10 +24,11 @@ class Application {
   handle (event, context, logger) {
     logger.info({ event, context }, 'Application::handle()');
 
-    return this._eventHandler.handle(event, context, logger)
+    return Promise.resolve()
+      .then(() => this._eventHandler.handle(event, context, logger))
       .catch((err) => this._errorHandler.handle(err, event, context, logger))
-      .catch((err) => {;
-        logger.logError(error, 'Application::handle()');
+      .catch((err) => {
+        logger.error({ err }, 'Application::handle()');
         throw err;
       });
   }

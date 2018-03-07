@@ -26,10 +26,9 @@ class Application {
 
     return Promise.resolve()
       .then(() => this._eventHandler.handle(event, context, logger))
-      .catch((err) => this._errorHandler.handle(err, event, context, logger))
       .catch((err) => {
         logger.error({ err }, 'Application::handle()');
-        throw err;
+        return this._errorHandler.handle(err, event, context, logger);
       });
   }
 }

@@ -133,7 +133,7 @@ describe('Application', function () {
 
       it('should invoke logger.error()', function () {
         return this.promise.catch(() => {
-          expect(this.logger.error).to.have.been.calledWith({ err: this.errorHandlerError });
+          expect(this.logger.error).to.have.been.calledWith({ err: this.eventHandlerError });
         });
       });
     });

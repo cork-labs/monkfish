@@ -38,8 +38,8 @@ describe('ApplicationError', function () {
       expect(this.mappedError.details).to.equal(this.details);
     });
 
-    it('should preserve the old stack', function () {
-      expect(this.mappedError.stack).to.deep.equal(this.error.stack);
+    it('should not preserve the old stack', function () {
+      expect(this.mappedError.stack).to.not.deep.equal(this.error.stack);
     });
   });
 

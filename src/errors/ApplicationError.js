@@ -14,7 +14,6 @@ ApplicationError.map = (err, name, severity) => {
   name = name || err.name;
   severity = severity || err.severity;
   const ret = new ApplicationError(name, severity, err.details);
-  ret.stack = err.stack;
   return ret;
 };
 

@@ -17,15 +17,15 @@ class ErrorHandler {
     this._fns = fns || [];
   }
 
-  _didFail (error, event, context, logger, fns) {
+  _didError (error, event, context, logger, fns) {
     if (!fns.length) {
       return Promise.resolve();
     }
     const handler = fns.shift();
     return Promise.resolve()
       .then(() => handler(error, event, context, logger))
-      .catch((err) => logger.error({ err, handler: handler.name }, 'ErrorHandler::handle()'))
-      .then(() => this._didFail(error, event, context, logger, fns));
+      .catch((err) => logger.error({ err, handler: handler.name }, 'ErrorHandler::_didError()'))
+      .then(() => this._didError(error, event, context, logger, fns));
   }
 
   _mapError (err) {
@@ -38,7 +38,7 @@ class ErrorHandler {
 
   handle (err, event, context, logger) {
     const error = this._mapError(err);
-    return this._didFail(error, event, context, logger, this._fns.slice(0))
+    return this._didError(error, event, context, logger, this._fns.slice(0))
       .then(() => {
         throw error;
       });

@@ -25,18 +25,18 @@ class Application {
     const eventType = event.type;
     const handler = this._controllers[eventType];
     if (!handler) {
-      throw new ApplicationError('application.event.unknown', 'error', {
+      throw new ApplicationError('monkfish.application.event.unknown', 'error', {
         event: event.type
       });
     }
     if (typeof handler !== 'object') {
-      throw new ApplicationError('application.handler.invalid', 'error', {
+      throw new ApplicationError('monkfish.application.handler.invalid', 'error', {
         event: event.type,
         handler: typeof handler
       });
     }
     if (typeof handler.handle !== 'function') {
-      throw new ApplicationError('application.handler.invalid', 'error', {
+      throw new ApplicationError('monkfish.application.handler.invalid', 'error', {
         event: event.type,
         handler: handler.constructor ? handler.constructor.name : 'unknown'
       });
@@ -44,9 +44,9 @@ class Application {
     return handler;
   }
 
-  _willHandle (event, context, logger, handlers) {
+  _willHandle (event, _handler, context, logger, handlers) {
     if (!handlers.length) {
-      return Promise.resolve();
+      return Promise.resolve(_handler);
     }
     const handler = handlers.shift();
     return Promise.resolve()
@@ -55,7 +55,7 @@ class Application {
         logger.error({ err, handler: handler.name }, 'EventHandler::_willHandle()');
         throw err;
       })
-      .then(() => this._willHandle(event, context, logger, handlers));
+      .then(() => this._willHandle(event, _handler, context, logger, handlers));
   }
 
   _handle (event, context, logger, handler) {
@@ -77,9 +77,10 @@ class Application {
 
   handle (event, context, logger) {
     return new Promise((resolve, reject) => {
-      var handler = this._resolveController(event);
-      this._willHandle(event, context, logger, this._preFns.slice(0))
-        .then(() => this._handle(event, context, logger, handler))
+      return Promise.resolve()
+        .then(() => this._resolveController(event))
+        .then((handler) => this._willHandle(event, handler, context, logger, this._preFns.slice(0)))
+        .then((handler) => this._handle(event, context, logger, handler))
         .then((result) => this._didHandle(result, event, context, logger, this._postFns.slice(0)))
         .then(resolve)
         .catch(reject);

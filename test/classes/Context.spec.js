@@ -6,7 +6,7 @@ const expect = chai.expect;
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-const Context = require('../../src/classes/Context');
+const Context = require('../../src/classes/context');
 
 describe('Context', function () {
   it('should be a function', function () {

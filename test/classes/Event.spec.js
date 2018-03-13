@@ -6,7 +6,7 @@ const expect = chai.expect;
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-const Event = require('../../src/classes/Event');
+const Event = require('../../src/classes/event');
 
 describe('Event', function () {
   it('should be a function', function () {

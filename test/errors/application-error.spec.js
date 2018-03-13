@@ -6,7 +6,7 @@ const expect = chai.expect;
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-const ApplicationError = require('../../src/errors/ApplicationError');
+const ApplicationError = require('../../src/errors/application-error');
 
 describe('ApplicationError', function () {
   it('should be a function', function () {

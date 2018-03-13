@@ -1,19 +1,27 @@
 'use strict';
 
-const Application = require('./Application');
-const EventHandler = require('./EventHandler');
-const ErrorHandler = require('./ErrorHandler');
+const Application = require('./application');
+const Module = require('./module');
+const Controller = require('./Controller');
+const Middleware = require('./middleware');
+const EventMap = require('./event-map');
+const EventDispatcher = require('./event-dispatcher');
+const ErrorDispatcher = require('./error-dispatcher');
 
-const Context = require('./classes/Context');
-const Event = require('./classes/Event');
-const Result = require('./classes/Result');
+const Context = require('./classes/context');
+const Event = require('./classes/event');
+const Result = require('./classes/result');
 
-const ApplicationError = require('./errors/ApplicationError');
+const ApplicationError = require('./errors/application-error');
 
 module.exports = {
   Application,
-  EventHandler,
-  ErrorHandler,
+  Module,
+  Controller,
+  Middleware,
+  EventMap,
+  EventDispatcher,
+  ErrorDispatcher,
   classes: {
     Context,
     Event,

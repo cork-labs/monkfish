@@ -9,7 +9,7 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
-const Application = require('../src/Application');
+const Application = require('../src/application');
 
 describe('Application', function () {
   it('should be a function', function () {
@@ -18,17 +18,21 @@ describe('Application', function () {
 
   describe('api', function () {
     beforeEach(function () {
-      this.eventHandler = {
-        handle: sinon.stub()
-      };
-      this.errorHandler = {
-        handle: sinon.stub()
-      };
       this.logger = {
         info: sinon.spy(),
         error: sinon.spy()
       };
-      this.application = new Application(this.eventHandler, this.errorHandler, this.logger);
+      this.config = {
+        error: {
+          map: {
+            'Error': {
+              name: 'bazqux',
+              severity: 'warn'
+            }
+          }
+        }
+      };
+      this.application = new Application(this.config);
     });
 
     describe('newContext()', function () {
@@ -66,74 +70,165 @@ describe('Application', function () {
       });
     });
 
-    describe('handle()', function () {
-      beforeEach(function () {
-        this.type = 'foobar';
-        this.eventData = { foo: 'bar' };
-        this.event = this.application.newEvent(this.type, this.eventData);
+    describe('addModule()', function () {
+      describe('when invoked with an invalid module', function () {
+        beforeEach(function () {
+          this.module = {};
+        });
 
-        this.contextData = { foo: 'bar' };
-        this.context = this.application.newContext(this.contextData);
+        it('should throw an error', function () {
+          const fn = () => this.application.addModule(this.module);
+          expect(fn).to.throw('Invalid module');
+        });
       });
 
-      describe('when event handler resolves', function () {
+      describe('when invoked with a repeated module', function () {
         beforeEach(function () {
-          this.eventHandlerResult = { foo: 'barbaz' };
-          this.eventHandler.handle.resolves(this.eventHandlerResult);
-          this.promise = this.application.handle(this.event, this.context, this.logger);
-        });
-
-        it('should resolve with the expected data', function () {
-          return expect(this.promise).to.eventually.deep.equal(this.eventHandlerResult);
-        });
-
-        it('should invoke logger.info()', function () {
-          const expectedData = {
-            event: this.event,
-            context: this.context
+          this.module = {
+            addModule: sinon.spy()
           };
-          return this.promise.then(() => {
-            expect(this.logger.info).to.have.been.calledWith(expectedData);
+          this.application.addModule(this.module);
+        });
+
+        it('should throw an error', function () {
+          const fn = () => this.application.addModule(this.module);
+          expect(fn).to.throw('Duplicate module');
+        });
+      });
+    });
+
+    describe('start()', function () {
+      describe('when invoked with zero modules', function () {
+        beforeEach(function () {
+          this.module = {};
+        });
+
+        it('should throw an error', function () {
+          const fn = () => this.application.start();
+          expect(fn).to.throw('zero modules');
+        });
+      });
+
+      describe('when invoked with a a single module', function () {
+        beforeEach(function () {
+          this.module = {
+            addModule: sinon.spy(),
+            getMiddlewares: sinon.stub().returns([]),
+            getHandlers: sinon.stub().returns([]),
+            getErrorHandlers: sinon.stub().returns([])
+          };
+          this.application.addModule(this.module);
+          this.promise = this.application.start();
+        });
+
+        it('should resolve', function () {
+          return expect(this.promise).to.eventually.deep.equal(undefined);
+        });
+      });
+    });
+
+    describe('handle()', function () {
+      describe('when called before start()', function () {
+        beforeEach(function () {
+
+        });
+        it('should throw an error', function () {
+          const fn = () => {
+            this.application.handle();
+          };
+          return expect(fn).to.throw('not yet started');
+        });
+      });
+
+      describe('when event is unknown', function () {
+        beforeEach(function () {
+          this.event = this.application.newEvent();
+          this.context = this.application.newContext();
+          this.module = {
+            addModule: sinon.spy(),
+            getMiddlewares: sinon.stub().returns([]),
+            getHandlers: sinon.stub().returns([]),
+            getErrorHandlers: sinon.stub().returns([])
+          };
+          this.application.addModule(this.module);
+          return this.application.start();
+        });
+
+        it('should throw an error', function () {
+          const fn = () => {
+            this.application.handle(this.event, this.context, this.logger);
+          };
+          return expect(fn).to.throw('monkfish.application.event.unknown');
+        });
+      });
+
+      describe('when event exists', function () {
+        beforeEach(function () {
+          this.controller = {
+            handle: sinon.stub()
+          };
+          this.handler = {
+            event: 'foobar',
+            controller: this.controller,
+            pre: [],
+            post: []
+          };
+          this.type = 'foobar';
+          this.eventData = { foo: 'bar' };
+          this.event = this.application.newEvent(this.type, this.eventData);
+          this.contextData = { foo: 'bar' };
+          this.context = this.application.newContext(this.contextData);
+          this.module = {
+            addModule: sinon.spy(),
+            getMiddlewares: sinon.stub().returns([]),
+            getHandlers: sinon.stub().returns([this.handler]),
+            getErrorHandlers: sinon.stub().returns([])
+          };
+          this.application.addModule(this.module);
+          return this.application.start();
+        });
+
+        describe('when event handler resolves', function () {
+          beforeEach(function () {
+            return this.application.start()
+              .then(() => {
+                this.controllerResult = { foo: 'barbaz' };
+                this.controller.handle.resolves(this.controllerResult);
+                this.promise = this.application.handle(this.event, this.context, this.logger);
+              });
+          });
+
+          it('should resolve with the expected data', function () {
+            return expect(this.promise).to.eventually.deep.equal(this.controllerResult);
+          });
+
+          it('should invoke logger.info()', function () {
+            const expectedData = {
+              event: this.event,
+              context: this.context
+            };
+            return this.promise.then(() => {
+              expect(this.logger.info).to.have.been.calledWith(expectedData);
+            });
           });
         });
-      });
-    });
 
-    describe('when event handler rejects', function () {
-      beforeEach(function () {
-        this.eventHandlerError = new Error('foobar');
-        this.eventHandler.handle.rejects(this.eventHandlerError);
-        this.errorHandler.handle.rejects(this.eventHandlerError);
-        this.promise = this.application.handle(this.event, this.context, this.logger);
-      });
+        describe('when event handler rejects', function () {
+          beforeEach(function () {
+            this.controllerError = new Error('foobar');
+            this.controller.handle.rejects(this.controllerError);
+            this.promise = this.application.handle(this.event, this.context, this.logger);
+          });
 
-      it('should reject with the expected data', function () {
-        return expect(this.promise).to.be.rejectedWith(this.eventHandlerError);
-      });
+          it('should invoke logger.error()', function () {
+            return this.promise.catch(() => {
+              expect(this.logger.error).to.have.been.calledWith({ err: this.controllerError });
+            });
+          });
 
-      it('should invoke logger.error()', function () {
-        return this.promise.catch(() => {
-          expect(this.logger.error).to.have.been.calledWith({ err: this.eventHandlerError });
-        });
-      });
-    });
-
-    describe('when event handler rejects and error handler rejects', function () {
-      beforeEach(function () {
-        this.eventHandlerError = new Error('foobar');
-        this.eventHandler.handle.rejects(this.eventHandlerError);
-        this.errorHandlerError = new Error('bazqux');
-        this.errorHandler.handle.rejects(this.errorHandlerError);
-        this.promise = this.application.handle(this.event, this.context, this.logger);
-      });
-
-      it('should reject with the expected data', function () {
-        return expect(this.promise).to.be.rejectedWith(this.errorHandlerError);
-      });
-
-      it('should invoke logger.error()', function () {
-        return this.promise.catch(() => {
-          expect(this.logger.error).to.have.been.calledWith({ err: this.eventHandlerError });
+          it('should reject with the expected error', function () {
+            return expect(this.promise).to.be.rejectedWith('bazqux');
+          });
         });
       });
     });

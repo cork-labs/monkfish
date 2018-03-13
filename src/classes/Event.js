@@ -3,9 +3,10 @@
 const _ = require('lodash');
 
 class Event {
-  constructor (type, data) {
+  constructor (type, data, params) {
     this.type = type;
-    this.data = _.cloneDeep(data, {});
+    this.data = _.cloneDeep(data) || {};
+    this.params = _.cloneDeep(params) || {};
   }
 }
 

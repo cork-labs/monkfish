@@ -6,7 +6,7 @@ const expect = chai.expect;
 const sinonChai = require('sinon-chai');
 chai.use(sinonChai);
 
-const Result = require('../../src/classes/Result');
+const Result = require('../../src/classes/result');
 
 describe('Result', function () {
   it('should be a function', function () {

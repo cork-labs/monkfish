@@ -14,6 +14,8 @@ const Result = require('./classes/result');
 
 const ApplicationError = require('./errors/application-error');
 
+const ApplicationMock = require('./application.mock');
+
 module.exports = {
   Application,
   Module,
@@ -29,5 +31,6 @@ module.exports = {
   },
   errors: {
     ApplicationError
-  }
+  },
+  ApplicationMock: ApplicationMock
 };

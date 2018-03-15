@@ -38,16 +38,10 @@ class Module {
   }
 
   addPreMiddleware (middleware) {
-    if (!Middleware.isMiddleware(middleware)) {
-      throw new Error(`Invalid pre middleware ${middleware && middleware.constructor.name}.`);
-    }
     this._pre.push(middleware);
   }
 
   addPostMiddleware (middleware) {
-    if (!Middleware.isMiddleware(middleware)) {
-      throw new Error(`Invalid post middleware ${middleware && middleware.constructor.name}.`);
-    }
     this._post.push(middleware);
   }
 
@@ -95,12 +89,24 @@ class Module {
 
   // -- getters
 
+  getServices () {
+    return this._modules.reduce((acc, mod) => {
+      return Object.assign(acc, mod.getServices());
+    }, Object.assign({}, this._services));
+  }
+
   getService (name) {
     const service = this._services[name];
     if (!service) {
       throw new Error(`Unknown service ${name}.`);
     }
     return service;
+  }
+
+  getModels () {
+    return this._modules.reduce((acc, mod) => {
+      return Object.assign(acc, mod.getModels());
+    }, Object.assign({}, this._models));
   }
 
   getModel (name) {

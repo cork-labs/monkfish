@@ -75,7 +75,20 @@ class Application {
     if (this._modules.find(item => item.constructor.name === mod.constructor.name)) {
       throw new Error(`Duplicate module ${mod.constructor.name}.`);
     }
+    this._config.error.map = _.merge(mod.constructor.ERROR_MAP, this._config.error.map);
     this._modules.push(mod);
+  }
+
+  getServices () {
+    return this._modules.reduce((acc, mod) => {
+      return Object.assign(acc, mod.getServices());
+    }, {});
+  }
+
+  getModels () {
+    return this._modules.reduce((acc, mod) => {
+      return Object.assign(acc, mod.getModels());
+    }, {});
   }
 
   start () {

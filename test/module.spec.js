@@ -64,9 +64,9 @@ describe('Module', function () {
 
     describe('addPreMiddleware()', function () {
       describe('when an invalid middleware is provided', function () {
-        it('should throw an error', function () {
-          const fn = () => this.module.addPreMiddleware('foobar');
-          return expect(fn).to.throw('Invalid pre middleware String');
+        it('should not throw an error', function () {
+          const fn = () => this.module.addPreMiddleware({handle: () => {}});
+          return expect(fn).not.to.throw('Invalid pre middleware String');
         });
       });
     });
@@ -74,8 +74,8 @@ describe('Module', function () {
     describe('addPostMiddleware()', function () {
       describe('when an invalid middleware is provided', function () {
         it('should throw an error', function () {
-          const fn = () => this.module.addPostMiddleware('foobar');
-          return expect(fn).to.throw('Invalid post middleware String');
+          const fn = () => this.module.addPostMiddleware({handle: () => {}});
+          return expect(fn).not.to.throw('Invalid post middleware String');
         });
       });
     });

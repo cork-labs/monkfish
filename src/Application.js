@@ -27,9 +27,36 @@ class Application {
     this._eventDispatcher = new EventDispatcher();
     this._errorDispatcher = new ErrorDispatcher();
 
+    this._errorMap = {};
     this._started = null;
 
     this._modules = [];
+  }
+
+  _buildEventMap () {
+    const middlewares = this._buildMiddlewares();
+    this._eventMap = new EventMap(middlewares);
+
+    this._modules.forEach((mod) => {
+      const handlers = mod.getHandlers();
+      handlers.forEach((handler) => {
+        this._eventMap.addEventHandler(handler.event, handler);
+      });
+    });
+  }
+
+  _buildErrorMap () {
+    const errorMap = this._modules.reduce((acc, mod) => {
+      return _.merge(acc, mod.getErrorMap());
+    }, {});
+    this._errorMap = _.merge(errorMap, this._errorMap);
+  }
+
+  _buildErrorHAndlers () {
+    this._errorHandlers = this._modules.reduce((acc, mod) => {
+      const middlewares = mod.getErrorHandlers();
+      return acc.concat(middlewares);
+    }, []);
   }
 
   _buildMiddlewares () {
@@ -50,20 +77,9 @@ class Application {
       throw new Error(`Application contains zero modules.`);
     }
 
-    const middlewares = this._buildMiddlewares();
-    this._eventMap = new EventMap(middlewares);
-
-    this._modules.forEach((mod) => {
-      const handlers = mod.getHandlers();
-      handlers.forEach((handler) => {
-        this._eventMap.addEventHandler(handler.event, handler);
-      });
-    });
-
-    this._errorHandlers = this._modules.reduce((acc, mod) => {
-      const middlewares = mod.getErrorHandlers();
-      return acc.concat(middlewares);
-    }, []);
+    this._buildEventMap();
+    this._buildErrorMap();
+    this._buildErrorHAndlers();
   }
 
   // -- setup
@@ -75,8 +91,11 @@ class Application {
     if (this._modules.find(item => item.constructor.name === mod.constructor.name)) {
       throw new Error(`Duplicate module ${mod.constructor.name}.`);
     }
-    this._config.error.map = _.merge(mod.constructor.ERROR_MAP, this._config.error.map);
     this._modules.push(mod);
+  }
+
+  addErrorMap (map) {
+    this._errorMap = Object.assign(this._errorMap, map);
   }
 
   getServices () {
@@ -115,7 +134,7 @@ class Application {
     logger.info({ event, context }, 'monkfish.application.handle');
 
     const handler = this._eventMap.resolve(event);
-    const errorMap = this._config.error.map;
+    const errorMap = Object.assign(this._errorMap, handler.errorMap);
     const defaultError = this._config.error.default;
     const errorMiddlewares = this._errorHandlers;
 

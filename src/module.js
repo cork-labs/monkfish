@@ -1,10 +1,14 @@
 'use strict';
 
+const _ = require('lodash');
+
 const Controller = require('./controller');
 const Middleware = require('./middleware');
 
 class Module {
-  constructor () {
+  constructor (config) {
+    this._config = _.cloneDeep(config);
+
     this._modules = [];
 
     this._services = {};
@@ -15,6 +19,7 @@ class Module {
     this._handlers = [];
     this._middlewares = [];
     this._errorHandlers = [];
+    this._errorMap = {};
   }
 
   // -- setup
@@ -65,12 +70,22 @@ class Module {
       throw new Error(`Invalid post options for event ${eventType}.`);
     }
 
-    this._handlers.push({
+    options.errorMap = options.errorMap || {};
+    const controllerAllowedErrors = options.controller.getAllowedErrors && options.controller.getAllowedErrors();
+    const errorMap = (controllerAllowedErrors || []).reduce((acc, error) => {
+      acc[error] = true;
+      return acc;
+    }, {});
+
+    const handler = {
       event: eventType,
       pre: options.pre || [],
       post: options.post || [],
-      controller: options.controller
-    });
+      controller: options.controller,
+      errorMap: Object.assign(errorMap, options.errorMap)
+    };
+
+    this._handlers.push(handler);
   }
 
   addMiddleware (middleware) {
@@ -85,6 +100,10 @@ class Module {
       throw new Error(`Invalid error handler ${errorHandler && errorHandler.constructor.name}.`);
     }
     this._errorHandlers.push(errorHandler);
+  }
+
+  addErrorMap (map) {
+    this._errorMap = Object.assign(this._errorMap, map);
   }
 
   // -- getters
@@ -140,6 +159,13 @@ class Module {
     return this._modules.reduce((acc, mod) => {
       return acc.concat(mod.getErrorHandlers());
     }, []).concat(this._errorHandlers);
+  }
+
+  getErrorMap () {
+    const errorMap = this._modules.reduce((acc, mod) => {
+      return _.merge(acc, mod.getErrorMap());
+    }, {}); 1;
+    return _.merge(errorMap, this._errorMap);
   }
 }
 

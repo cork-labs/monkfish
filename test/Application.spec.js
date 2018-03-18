@@ -9,6 +9,9 @@ const chaiAsPromised = require('chai-as-promised');
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
+const Module = require('../src/module');
+const ApplicationError = require('../src/errors/application-error');
+
 const Application = require('../src/application');
 
 describe('Application', function () {
@@ -52,7 +55,7 @@ describe('Application', function () {
 
     describe('newEvent()', function () {
       beforeEach(function () {
-        this.type = 'foobar';
+        this.type = 'foo.bar';
         this.data = { foo: 'bar' };
         this.event = this.application.newEvent(this.type, this.data);
       });
@@ -115,7 +118,8 @@ describe('Application', function () {
             addModule: sinon.spy(),
             getMiddlewares: sinon.stub().returns([]),
             getHandlers: sinon.stub().returns([]),
-            getErrorHandlers: sinon.stub().returns([])
+            getErrorHandlers: sinon.stub().returns([]),
+            getErrorMap: sinon.stub().returns([])
           };
           this.application.addModule(this.module);
           this.promise = this.application.start();
@@ -129,9 +133,6 @@ describe('Application', function () {
 
     describe('handle()', function () {
       describe('when called before start()', function () {
-        beforeEach(function () {
-
-        });
         it('should throw an error', function () {
           const fn = () => {
             this.application.handle();
@@ -148,7 +149,8 @@ describe('Application', function () {
             addModule: sinon.spy(),
             getMiddlewares: sinon.stub().returns([]),
             getHandlers: sinon.stub().returns([]),
-            getErrorHandlers: sinon.stub().returns([])
+            getErrorHandlers: sinon.stub().returns([]),
+            getErrorMap: sinon.stub().returns([])
           };
           this.application.addModule(this.module);
           return this.application.start();
@@ -167,23 +169,16 @@ describe('Application', function () {
           this.controller = {
             handle: sinon.stub()
           };
-          this.handler = {
-            event: 'foobar',
-            controller: this.controller,
-            pre: [],
-            post: []
-          };
-          this.type = 'foobar';
+          this.controller.getAllowedErrors = () => ['foobar'];
+          this.type = 'foo.bar';
           this.eventData = { foo: 'bar' };
           this.event = this.application.newEvent(this.type, this.eventData);
           this.contextData = { foo: 'bar' };
           this.context = this.application.newContext(this.contextData);
-          this.module = {
-            addModule: sinon.spy(),
-            getMiddlewares: sinon.stub().returns([]),
-            getHandlers: sinon.stub().returns([this.handler]),
-            getErrorHandlers: sinon.stub().returns([])
-          };
+          this.module = new Module();
+          this.module.addHandler('foo.bar', {
+            controller: this.controller
+          });
           this.application.addModule(this.module);
           return this.application.start();
         });
@@ -213,20 +208,62 @@ describe('Application', function () {
           });
         });
 
-        describe('when event handler rejects', function () {
+        describe('when event handler rejects with an error allowed by the controller', function () {
           beforeEach(function () {
-            this.controllerError = new Error('foobar');
+            this.controllerError = new ApplicationError('foobar');
             this.controller.handle.rejects(this.controllerError);
             this.promise = this.application.handle(this.event, this.context, this.logger);
           });
 
-          it('should invoke logger.error()', function () {
+          it('should invoke logger.error() with the original error', function () {
             return this.promise.catch(() => {
               expect(this.logger.error).to.have.been.calledWith({ err: this.controllerError });
             });
           });
 
           it('should reject with the expected error', function () {
+            return expect(this.promise).to.be.rejectedWith('foobar');
+          });
+        });
+
+        describe('when event handler rejects with an error not allowed by the controller', function () {
+          beforeEach(function () {
+            this.controllerError = new ApplicationError('bazqux');
+            this.controller.handle.rejects(this.controllerError);
+            this.promise = this.application.handle(this.event, this.context, this.logger);
+          });
+
+          it('should reject with the default error', function () {
+            return expect(this.promise).to.be.rejectedWith('unexpected');
+          });
+        });
+      });
+
+      describe('when an error map is configured', function () {
+        beforeEach(function () {
+          this.controller = {
+            handle: sinon.stub()
+          };
+          this.type = 'foo.bar';
+          this.event = this.application.newEvent(this.type);
+          this.context = this.application.newContext();
+          this.module = new Module();
+          this.module.addHandler('foo.bar', {
+            controller: this.controller
+          });
+          this.module.addErrorMap({ 'foobar': { name: 'bazqux' } });
+          this.application.addModule(this.module);
+          return this.application.start();
+        });
+
+        describe('when event handler rejects with an error configured in the error map', function () {
+          beforeEach(function () {
+            this.controllerError = new ApplicationError('foobar');
+            this.controller.handle.rejects(this.controllerError);
+            this.promise = this.application.handle(this.event, this.context, this.logger);
+          });
+
+          it('should reject with the mapped error', function () {
             return expect(this.promise).to.be.rejectedWith('bazqux');
           });
         });

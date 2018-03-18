@@ -28,6 +28,16 @@ class EventMap {
     options = _.cloneDeep(options);
 
     options.pre = options.pre.map((middleware) => this._getMiddleware(middleware.name, eventType));
+
+    const middlewaresErrorMap = options.pre.reduce((acc, middleware) => {
+      const middlewareAllowedErrors = middleware.getAllowedErrors && middleware.getAllowedErrors();
+      (middlewareAllowedErrors || []).forEach(error => {
+        acc[error] = true;
+      });
+      return acc;
+    }, {});
+    options.errorMap = Object.assign(middlewaresErrorMap, options.errorMap);
+
     options.post = options.post.map((middleware) => this._getMiddleware(middleware.name, eventType));
 
     this._map[eventType] = Object.freeze(options);

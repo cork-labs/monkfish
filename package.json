@@ -1,6 +1,6 @@
 {
   "name": "@cork-labs/monkfish",
-  "version": "0.2.1",
+  "version": "0.2.2-pre",
   "description": "Node.js application framework inspired by DDD, Hexagonal and Clean principles",
   "license": "MIT",
   "homepage": "https://github.com/cork-labs/monkfish",

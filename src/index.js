@@ -14,6 +14,8 @@ const Result = require('./classes/result');
 
 const ApplicationError = require('./errors/application-error');
 
+const ErrorSeverity = require('./enums/error-severity');
+
 const ApplicationMock = require('./application.mock');
 
 module.exports = {
@@ -31,6 +33,9 @@ module.exports = {
   },
   errors: {
     ApplicationError
+  },
+  enums: {
+    ErrorSeverity
   },
   ApplicationMock: ApplicationMock
 };

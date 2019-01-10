@@ -27,33 +27,33 @@ describe('EventMap', function () {
       this.eventMap = new EventMap(this.middlewares);
     });
 
-    describe('addEventHandler() unknown middleware', function () {
+    describe('addEventHandler()', function () {
       beforeEach(function () {
-        this.event = {
-          type: 'foo',
+        this.handler = {
+          event: 'foo',
           pre: [{name: 'qux'}]
         };
       });
 
       describe('when handler contains an unknown middleware', function () {
         it('should throw an error', function () {
-          const fn = () => this.eventMap.addEventHandler(this.event.type, this.event);
+          const fn = () => this.eventMap.addEventHandler(this.handler);
           return expect(fn).to.throw('Unknown middleware qux in event foo');
         });
       });
 
       describe('when event is duplicate', function () {
         beforeEach(function () {
-          this.event = {
-            type: 'foo',
+          this.handler = {
+            event: 'foo',
             pre: [],
             post: []
           };
-          this.eventMap.addEventHandler(this.event.type, this.event);
+          this.eventMap.addEventHandler(this.handler);
         });
 
         it('should throw an error', function () {
-          const fn = () => this.eventMap.addEventHandler(this.event.type, this.event);
+          const fn = () => this.eventMap.addEventHandler(this.handler);
           return expect(fn).to.throw('Duplicate');
         });
       });
@@ -75,12 +75,12 @@ describe('EventMap', function () {
 
       describe('when a known event is provided', function () {
         beforeEach(function () {
-          this.event = {
-            type: 'foo',
+          this.handler = {
+            event: 'foo',
             pre: [{name: 'baz'}],
             post: []
           };
-          this.eventMap.addEventHandler(this.event.type, this.event);
+          this.eventMap.addEventHandler(this.handler);
           this.event = {
             type: 'foo'
           };
@@ -89,7 +89,7 @@ describe('EventMap', function () {
 
         it('should return the handler', function () {
           expect(this.resolved).to.be.an('object');
-          expect(this.resolved.type).to.equal(this.event.type);
+          expect(this.resolved.event).to.equal(this.event.type);
         });
 
         it('should map the middleware', function () {

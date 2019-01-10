@@ -10,6 +10,7 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
 const ErrorDispatcher = require('../src/error-dispatcher');
+const ErrorSeverity = require('../src/enums/error-severity');
 
 describe('ErrorDispatcher', function () {
   it('should be a function', function () {
@@ -25,8 +26,7 @@ describe('ErrorDispatcher', function () {
         }
       };
       this.defaultError = {
-        name: 'foobar.foobar',
-        severity: 'fatal'
+        name: 'foo.bar.baz'
       };
       this.interceptor1 = sinon.stub();
       this.interceptor2 = sinon.stub();
@@ -43,9 +43,9 @@ describe('ErrorDispatcher', function () {
 
     describe('handle()', function () {
       beforeEach(function () {
-        this.error = new Error('foobar');
+        this.error = new Error('Foobar');
         this.event = {
-          type: 'foobar',
+          type: 'baz',
           data: {
             foo: 'bar'
           }
@@ -69,14 +69,14 @@ describe('ErrorDispatcher', function () {
         });
 
         it('should reject with the default error', function () {
-          return expect(this.promise).to.be.rejectedWith('foobar.foobar');
+          return expect(this.promise).to.be.rejectedWith('foo.bar.baz');
         });
 
         it('should have called interceptor 1', function () {
           return this.promise.catch(() => {
             expect(this.interceptor1).to.have.callCount(1);
             expect(this.interceptor1.args[0][0]).to.be.an('error');
-            expect(this.interceptor1.args[0][0].name).to.equal('foobar.foobar');
+            expect(this.interceptor1.args[0][0].name).to.equal('foo.bar.baz');
             expect(this.interceptor1.args[0][1]).to.equal(this.event);
             expect(this.interceptor1.args[0][2]).to.equal(this.context);
             expect(this.interceptor1.args[0][3]).to.equal(this.logger);
@@ -91,11 +91,11 @@ describe('ErrorDispatcher', function () {
 
         it('should reject with the default error', function () {
           return this.promise.catch((err) => {
-            expect(err.name).to.equal('foobar.foobar');
-            expect(err.message).to.equal('foobar.foobar');
-            expect(err.severity).to.equal('fatal');
+            expect(err.name).to.equal('foo.bar.baz');
+            expect(err.message).to.equal('foo.bar.baz');
+            expect(err.severity).to.equal(ErrorSeverity.ERROR);
             expect(err.details).to.equal(undefined);
-            expect(err.parent).to.equal(undefined);
+            expect(err.parent).to.equal(this.error);
           });
         });
       });
@@ -125,7 +125,7 @@ describe('ErrorDispatcher', function () {
             expect(err.message).to.equal('bazqux');
             expect(err.severity).to.equal('warn');
             expect(err.details).to.equal(undefined);
-            expect(err.parent).to.equal(undefined);
+            expect(err.parent).to.equal(this.error);
           });
         });
       });

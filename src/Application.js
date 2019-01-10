@@ -38,9 +38,9 @@ class Application {
     this._eventMap = new EventMap(middlewares);
 
     this._modules.forEach((mod) => {
-      const handlers = mod.getHandlers();
-      handlers.forEach((handler) => {
-        this._eventMap.addEventHandler(handler.event, handler);
+      const handlers = mod.getHandlersOptions();
+      handlers.forEach((handlerOptions) => {
+        this._eventMap.addEventHandler(handlerOptions);
       });
     });
   }
@@ -137,6 +137,8 @@ class Application {
     const errorMap = Object.assign(this._errorMap, handler.errorMap);
     const defaultError = this._config.error.default;
     const errorMiddlewares = this._errorHandlers;
+
+    handler.controller.entityService = this.entityService;
 
     return Promise.resolve()
       .then(() => this._eventDispatcher.dispatch(handler, event, context, logger))

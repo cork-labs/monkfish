@@ -117,7 +117,7 @@ describe('Application', function () {
           this.module = {
             addModule: sinon.spy(),
             getMiddlewares: sinon.stub().returns([]),
-            getHandlers: sinon.stub().returns([]),
+            getHandlersOptions: sinon.stub().returns([]),
             getErrorHandlers: sinon.stub().returns([]),
             getErrorMap: sinon.stub().returns([])
           };
@@ -148,7 +148,7 @@ describe('Application', function () {
           this.module = {
             addModule: sinon.spy(),
             getMiddlewares: sinon.stub().returns([]),
-            getHandlers: sinon.stub().returns([]),
+            getHandlersOptions: sinon.stub().returns([]),
             getErrorHandlers: sinon.stub().returns([]),
             getErrorMap: sinon.stub().returns([])
           };

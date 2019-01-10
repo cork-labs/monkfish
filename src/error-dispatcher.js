@@ -1,6 +1,7 @@
 'use strict';
 
 const ApplicationError = require('./errors/application-error');
+const ErrorSeverity = require('./enums/error-severity');
 
 class ErrorDispatcher {
   _dispatch (error, event, context, logger, pipeline) {
@@ -15,9 +16,13 @@ class ErrorDispatcher {
   }
 
   _mapError (errorMap, defaultError, err) {
-    const name = err && err.name;
-    const error = errorMap[name] ? errorMap[name] : defaultError;
-    return ApplicationError.map(err, error.name, error.severity);
+    try {
+      const name = err && err.name;
+      const error = errorMap[name] ? errorMap[name] : defaultError;
+      return ApplicationError.wrap(err, error.name, error.severity);
+    } catch (err) {
+      return new ApplicationError(err.name, ErrorSeverity.ERROR, err.stack, err);
+    }
   }
 
   // -- public
@@ -26,7 +31,7 @@ class ErrorDispatcher {
     const error = this._mapError(errorMap, defaultError, err);
     return this._dispatch(error, event, context, logger, middlewares.slice(0))
       .then(() => {
-        throw error;
+        return Promise.reject(error);
       });
   }
 }

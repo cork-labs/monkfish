@@ -1,8 +1,7 @@
 'use strict';
 
-const _ = require('lodash');
-
 const ApplicationError = require('./errors/application-error');
+const EventHandler = require('./event-handler');
 
 class EventMap {
   constructor (middlewares) {
@@ -20,32 +19,21 @@ class EventMap {
 
   // -- public
 
-  addEventHandler (eventType, options) {
-    if (this._map[eventType]) {
-      throw new Error(`Duplicate event "${eventType}".`);
+  addEventHandler (handlerOptions) {
+    if (this._map[handlerOptions.event]) {
+      throw new Error(`Duplicate event "${handlerOptions.event}".`);
     }
 
-    options = _.cloneDeep(options);
+    const mapMiddlewaresFn = (name) => {
+      return this._getMiddleware(name, handlerOptions.event);
+    };
+    const handler = new EventHandler(handlerOptions, mapMiddlewaresFn);
 
-    options.pre = options.pre.map((middleware) => this._getMiddleware(middleware.name, eventType));
-
-    const middlewaresErrorMap = options.pre.reduce((acc, middleware) => {
-      const middlewareAllowedErrors = middleware.getAllowedErrors && middleware.getAllowedErrors();
-      (middlewareAllowedErrors || []).forEach(error => {
-        acc[error] = true;
-      });
-      return acc;
-    }, {});
-    options.errorMap = Object.assign(middlewaresErrorMap, options.errorMap);
-
-    options.post = options.post.map((middleware) => this._getMiddleware(middleware.name, eventType));
-
-    this._map[eventType] = Object.freeze(options);
+    this._map[handler.event] = handler;
   }
 
   resolve (event) {
-    const eventType = event.type;
-    const handler = this._map[eventType];
+    const handler = this._map[event.type];
 
     if (!handler) {
       throw new ApplicationError('monkfish.application.event.unknown', 'error', {

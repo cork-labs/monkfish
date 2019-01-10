@@ -13,7 +13,7 @@ describe('ApplicationError', function () {
     expect(ApplicationError).to.be.a('function');
   });
 
-  describe('map()', function () {
+  describe('wrap()', function () {
     beforeEach(function () {
       this.name = 'foo';
       this.severity = 'bar';
@@ -23,7 +23,7 @@ describe('ApplicationError', function () {
 
       this.newName = 'new foo';
       this.newSeverity = 'new bar';
-      this.mappedError = ApplicationError.map(this.error, this.newName, this.newSeverity);
+      this.mappedError = ApplicationError.wrap(this.error, this.newName, this.newSeverity);
     });
 
     it('should store the new name', function () {

@@ -238,7 +238,7 @@ describe('Module', function () {
       });
     });
 
-    describe('getHandlers()', function () {
+    describe('getHandlersOptions()', function () {
       beforeEach(function () {
         this.handler1 = {
           event: 'foobar',
@@ -262,7 +262,7 @@ describe('Module', function () {
         this.subModule.addHandler(this.handler1.event, this.handler1);
         this.module.addModule(this.subModule);
         this.module.addHandler(this.handler2.event, this.handler2);
-        this.result = this.module.getHandlers();
+        this.result = this.module.getHandlersOptions();
       });
 
       it('should return all handlers', function () {

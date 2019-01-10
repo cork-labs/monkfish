@@ -2,8 +2,8 @@
 
 const _ = require('lodash');
 
-const Controller = require('./controller');
 const Middleware = require('./middleware');
+const EventHandlerOptions = require('./event-handler-options');
 
 class Module {
   constructor (config) {
@@ -51,39 +51,11 @@ class Module {
   }
 
   addHandler (eventType, options) {
-    if (typeof eventType !== 'string' || !eventType.match(/^[a-z]+(.[a-z]+)*$/)) {
-      throw new Error(`Invalid event ${eventType}.`);
-    }
     if (this._handlers.find(handler => handler.event === eventType)) {
       throw new Error(`Duplicate event ${eventType}.`);
     }
-    if (typeof options !== 'object') {
-      throw new Error(`Invalid options for event ${eventType}.`);
-    }
-    if (!Controller.isController(options.controller)) {
-      throw new Error(`Invalid controller for event ${eventType}.`);
-    }
-    if (options.pre && !Array.isArray(options.pre)) {
-      throw new Error(`Invalid pre options for event ${eventType}.`);
-    }
-    if (options.post && !Array.isArray(options.post)) {
-      throw new Error(`Invalid post options for event ${eventType}.`);
-    }
 
-    options.errorMap = options.errorMap || {};
-    const controllerAllowedErrors = options.controller.getAllowedErrors && options.controller.getAllowedErrors();
-    const errorMap = (controllerAllowedErrors || []).reduce((acc, error) => {
-      acc[error] = true;
-      return acc;
-    }, {});
-
-    const handler = {
-      event: eventType,
-      pre: options.pre || [],
-      post: options.post || [],
-      controller: options.controller,
-      errorMap: Object.assign(errorMap, options.errorMap)
-    };
+    const handler = new EventHandlerOptions(eventType, options);
 
     this._handlers.push(handler);
   }
@@ -142,9 +114,9 @@ class Module {
     }, []).concat(this._middlewares);
   }
 
-  getHandlers () {
+  getHandlersOptions () {
     const handlers = this._modules.reduce((acc, mod) => {
-      return acc.concat(mod.getHandlers());
+      return acc.concat(mod.getHandlersOptions());
     }, []).concat(this._handlers);
 
     handlers.forEach((handler) => {

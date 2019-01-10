@@ -4,27 +4,27 @@ const Application = require('./application');
 
 class Mockfish {
   constructor (config) {
-    this.application = new Application(config);
+    this._application = new Application(config);
   }
 
   addModule (mod) {
-    this.application.addModule(mod);
+    this._application.addModule(mod);
   }
 
   start () {
-    return this.application.start();
+    return this._application.start();
   }
 
   getServices () {
-    return this.application.getServices();
+    return this._application.getServices();
   }
 
   getModels () {
-    return this.application.getModels();
+    return this._application.getModels();
   }
 
   handle () {
-    return this.application.handle.apply(this.application, arguments);
+    return this._application.handle.apply(this._application, arguments);
   }
 }
 

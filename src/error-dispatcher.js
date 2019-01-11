@@ -11,7 +11,7 @@ class ErrorDispatcher {
     const handler = pipeline.shift();
     return Promise.resolve()
       .then(() => handler(error, event, context, logger))
-      .catch((err) => logger.error({ err, handler: handler.name }, 'monkfish.application.error-dispatch'))
+      .catch((err) => logger.error('monkfish.application.error-dispatch', { handler: handler.name }, err))
       .then(() => this._dispatch(error, event, context, logger, pipeline));
   }
 

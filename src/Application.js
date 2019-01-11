@@ -131,19 +131,17 @@ class Application {
       throw new Error('Application is not yet started.');
     }
 
-    logger.info({ event, context }, 'monkfish.application.handle');
+    logger.info('monkfish.application.handle', { event, context });
 
     const handler = this._eventMap.resolve(event);
     const errorMap = Object.assign(this._errorMap, handler.errorMap);
     const defaultError = this._config.error.default;
     const errorMiddlewares = this._errorHandlers;
 
-    handler.controller.entityService = this.entityService;
-
     return Promise.resolve()
       .then(() => this._eventDispatcher.dispatch(handler, event, context, logger))
       .catch((err) => {
-        logger.error({ err }, 'monkfish.application.handle');
+        logger.error('monkfish.application.handle', { handler }, err);
         return this._errorDispatcher.dispatch(errorMap, defaultError, errorMiddlewares, err, event, context, logger);
       });
   }

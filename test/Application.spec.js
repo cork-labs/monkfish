@@ -217,7 +217,7 @@ describe('Application', function () {
 
           it('should invoke logger.error() with the original error', function () {
             return this.promise.catch(() => {
-              expect(this.logger.error).to.have.been.calledWith({ err: this.controllerError });
+              expect(this.logger.error).to.have.been.calledWith(this.controllerError);
             });
           });
 

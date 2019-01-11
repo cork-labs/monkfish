@@ -18,7 +18,7 @@ class EventDispatcher {
     const middleware = pipeline.shift();
     return Promise.resolve()
       .then(() => middleware.handle(result, event, context, logger))
-      .catch((err) => logger.error({ err, middleware: middleware.name }, 'monkfish.application.post-dispatch'))
+      .catch((err) => logger.error('monkfish.application.post-dispatch', { middleware: middleware.name }, err))
       .then(() => this._postDispatch(event, result, context, logger, pipeline));
   }
 

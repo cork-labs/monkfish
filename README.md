@@ -14,51 +14,51 @@ npm install --save @cork-labs/moknfish
 ## API
 
 
-### class Application
+### `Application`
 
-#### constructor(eventHandler, errorHandler, logger)
+#### `new Application(eventHandler, errorHandler, logger)`
 
-#### newEvent(data)
+#### `newEvent(data)`
 
-#### newContext(type, data)
+#### `newContext(type, data)`
 
-#### handle(event, context, logger)
-
-
-### class ErrorHandler
-
-#### constructor(fns, config)
-
-#### handle(err, event, context, logger)
+#### `handle(event, context, logger)`
 
 
-### class EventHandler
+### `ErrorHandler`
 
-#### constructor(controllers, preFns, postFns)
+#### `constructor(fns, config)`
 
-#### handle(event, context, logger)
-
-#### constructor(fns, config)
+#### `handle(err, event, context, logger)`
 
 
-### class Context
+### `EventHandler`
 
-#### constructor(data)
+#### `constructor(controllers, preFns, postFns)`
 
+#### `handle(event, context, logger)`
 
-### class Event
-
-#### constructor(type, data)
-
-
-### class Result
-
-#### constructor(data, meta)
+#### `constructor(fns, config)`
 
 
-### class ApplicationError extends Error
+### `Context`
 
-#### constructor (name, severity, details, parent)
+#### `constructor(data)`
+
+
+### `Event`
+
+#### `constructor(type, data)`
+
+
+### `Result`
+
+#### `constructor(data, meta)`
+
+
+### `ApplicationError extends Error`
+
+#### `constructor (name, severity, details, parent)`
 
 
 ## Develop
